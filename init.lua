@@ -13,7 +13,7 @@ local compatible_nodes = {
 	"default:river_water_flowing"
 }
 
--- Check if the subspace still enabled for user (or can be disabled)
+
 local function isu_get_wielded(playername)
 	local user = minetest.get_player_by_name(playername)
 	-- if user leave the game, disable them
@@ -117,7 +117,7 @@ minetest.register_globalstep(function(dtime)
 
 
 
-				-- set offset for jump or sneak
+				
 				userpos = vector.round(userpos)
 
 				--voxel_manip magic
@@ -176,7 +176,6 @@ minetest.register_globalstep(function(dtime)
 		end
 )
 
--- node to hide the original one
 minetest.register_node("ice_step:ice", {
 	description = "Ice",
 	tiles = {"default_ice.png"},
