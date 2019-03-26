@@ -165,9 +165,6 @@ minetest.register_globalstep(function(dtime)
 				if changed then
 					manip:set_data(data)
 					manip:write_to_map()
-					local wear = isu_stack:get_wear()
-					isu_stack:add_wear(transform_count)
-					user:set_wielded_item(isu_stack)
 				end
 			end
 			-- jump special handling. Restore node under the player
