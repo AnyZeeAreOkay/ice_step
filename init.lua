@@ -13,7 +13,7 @@ local compatible_nodes = {
 	"default:river_water_flowing"
 }
 
-
+-- Check if the subspace still enabled for user (or can be disabled)
 local function isu_get_wielded(playername)
 	local user = minetest.get_player_by_name(playername)
 	-- if user leave the game, disable them
@@ -34,7 +34,7 @@ local ice_staff_users = {
 	staff_users = {},
 }
 
-
+-- tool definition
 minetest.register_tool("ice_step:ice_staff", {
 	description = "Staff of Ice",
 	inventory_image = "ice_staff.png",
@@ -89,6 +89,7 @@ minetest.register_tool("ice_step:ice_staff", {
 					transform_count = transform_count + 1
 				end
 			end
+--					end
 	end
 	-- save changes if needed
 	if changed then
@@ -138,7 +139,6 @@ minetest.register_globalstep(function(dtime)
 				-- check each node in the area
 				for i in area:iterp(pos1, pos2) do
 					local nodepos = area:position(i)
-          --uncomment the following line if you want ice to appear randomly, also
 					--if math.random(0, vector.distance(userpos, nodepos)) < 2 then
 						local cur_id = data[i]
 						if cur_id and cur_id ~= isu_id and cur_id ~= air_id then
@@ -165,6 +165,10 @@ minetest.register_globalstep(function(dtime)
 				if changed then
 					manip:set_data(data)
 					manip:write_to_map()
+				--Uncomment the following three lines to add a durability limit
+				--      local wear = isu_stack:get_wear()
+				--	isu_stack:add_wear(transform_count)
+				--	user:set_wielded_item(isu_stack)
 				end
 			end
 			-- jump special handling. Restore node under the player
@@ -172,7 +176,7 @@ minetest.register_globalstep(function(dtime)
 		end
 )
 
-
+-- node to hide the original one
 minetest.register_node("ice_step:ice", {
 	description = "Ice",
 	tiles = {"default_ice.png"},
