@@ -47,24 +47,23 @@ minetest.register_tool("ice_step:ice_staff", {
 	end,
 	on_place = function(itemstack, user, pointed_thing)
 		local pos = minetest.get_pointed_thing_position(pointed_thing)
-		if pointed_thing.type == "node" then
+		if pointed_thing.type == "node" or pointed_thing.type == "object" then
 			local node = minetest.get_node(pos)
 
 
 	local pos1 = {x=pos.x-icesheetradius, y=pos.y-icesheetradius, z=pos.z-icesheetradius}
 	local pos2 = {x=pos.x+icesheetradius, y=pos.y+icesheetradius, z=pos.z+icesheetradius}
-
 	local manip = minetest.get_voxel_manip()
 	local min_c, max_c = manip:read_from_map(pos1, pos2)
 	local area = VoxelArea:new({MinEdge=min_c, MaxEdge=max_c})
-
+	local vi = i
 	local data = manip:get_data()
 	local changed = false
 
 	local isu_id = minetest.get_content_id("ice_step:ice")
 	local air_id = minetest.get_content_id("air")
 
-	local transform_count = 0
+--	local transform_count = 0
 
 	-- check each node in the area
 	for i in area:iterp(pos1, pos2) do
@@ -73,20 +72,22 @@ minetest.register_tool("ice_step:ice_staff", {
 			local cur_id = data[i]
 			if cur_id and cur_id ~= isu_id and cur_id ~= air_id then
 				local cur_name = minetest.get_name_from_content_id(cur_id)
+				local c_restricted_mode = false
 				if c_restricted_mode then
 					for _, compat in ipairs(compatible_nodes) do
 						if compat == cur_name then
 							data[i] = isu_id
 							minetest.get_meta(area:position(i)):set_string("ice_staff_users", cur_name)
 							changed = true
-							transform_count = transform_count + 1
+						--	transform_count = transform_count + 1
 						end
 					end
 				else
+
 					data[i] = isu_id
 					minetest.get_meta(area:position(i)):set_string("ice_staff_users", cur_name)
 					changed = true
-					transform_count = transform_count + 1
+				--	transform_count = transform_count + 1
 				end
 			end
 --					end
@@ -117,7 +118,7 @@ minetest.register_globalstep(function(dtime)
 
 
 
-				
+
 				userpos = vector.round(userpos)
 
 				--voxel_manip magic
@@ -219,6 +220,8 @@ minetest.register_abm({
 			local meta = minetest.get_meta(pos)
 			local data = meta:to_table()
 			node.name = data.fields.ice_staff_users
+			if node.name == 'ignore' then
+				return end
 			data.fields.ice_staff_users = nil
 			meta:from_table(data)
 			minetest.swap_node(pos, node)
