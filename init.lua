@@ -90,12 +90,59 @@ minetest.register_tool("ice_step:ice_staff", {
 				--	transform_count = transform_count + 1
 				end
 			end
---					end
+		--	end
 	end
+	if pointed_thing.type == "object" then
+		local node = minetest.get_node(pos)
+
+
+local pos1 = {x=pos.x-icesheetradius, y=pos.y-icesheetradius, z=pos.z-icesheetradius}
+local pos2 = {x=pos.x+icesheetradius, y=pos.y+icesheetradius, z=pos.z+icesheetradius}
+local manip = minetest.get_voxel_manip()
+local min_c, max_c = manip:read_from_map(pos1, pos2)
+local area = VoxelArea:new({MinEdge=min_c, MaxEdge=max_c})
+local vi = i
+local data = manip:get_data()
+local changed = false
+
+local isu_id = minetest.get_content_id("ice_step:ice")
+local air_id = minetest.get_content_id("air")
+
+--	local transform_count = 0
+
+-- check each node in the area
+for i in area:iterp(pos1, pos2) do
+	local nodepos = area:position(i)
+	--if math.random(0, vector.distance(userpos, nodepos)) < 2 then
+		local cur_id = data[i]
+		if cur_id and cur_id ~= isu_id and cur_id == air_id then
+			local cur_name = minetest.get_name_from_content_id(cur_id)
+			local c_restricted_mode = false
+			if c_restricted_mode then
+				for _, compat in ipairs(compatible_nodes) do
+					if compat == cur_name then
+						data[i] = isu_id
+						minetest.get_meta(area:position(i)):set_string("ice_staff_users", cur_name)
+						changed = true
+					--	transform_count = transform_count + 1
+					end
+				end
+			else
+
+				data[i] = isu_id
+				minetest.get_meta(area:position(i)):set_string("ice_staff_users", cur_name)
+				changed = true
+			--	transform_count = transform_count + 1
+			end
+		end
+				end
+end
 	-- save changes if needed
 	if changed then
+		manip:set_lighting({day=0, night=1})
 		manip:set_data(data)
 		manip:write_to_map()
+
 
 	end
 end
@@ -178,7 +225,7 @@ minetest.register_globalstep(function(dtime)
 )
 
 minetest.register_node("ice_step:ice", {
-	description = "Ice",
+	description = "Ice [Ice Step]",
 	tiles = {"default_ice.png"},
 	is_ground_content = false,
 	paramtype = "light",
@@ -191,13 +238,16 @@ minetest.register_abm({
 	nodenames = { "ice_step:ice" },
 	interval = 0.5,
 	chance = c_randomize_restore,
+
 	action = function(pos, node)
 		if node.name == 'ignore' then
 			return
 		end
-
+		if c_restricted_mode == false then
+			return end
 		local can_be_restored = true
 		-- check if the node can be restored
+
 		for playername, _ in pairs(ice_staff_users.staff_users) do
 			local isu_stack = isu_get_wielded(playername)
 			if not isu_stack then
@@ -220,7 +270,7 @@ minetest.register_abm({
 			local meta = minetest.get_meta(pos)
 			local data = meta:to_table()
 			node.name = data.fields.ice_staff_users
-			if node.name == 'ignore' then
+			if node.name == 'ignore' or node.name == nil then
 				return end
 			data.fields.ice_staff_users = nil
 			meta:from_table(data)
